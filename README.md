@@ -166,14 +166,20 @@ export async function POST(req: Request) {
 
 ```typescript
 import { NextResponse } from "next/server";
-import { connectDb } from "@/lib/db";
-import Product from "@/models/Product";
+import connectDb from "../../../../../lib/db";
+import Product from "../../../../../models/Product";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+// UPDATE Product
+export async function PUT(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> } 
+) {
     try {
         await connectDb();
+        const { id } = await params;
         const body = await req.json();
-        const product = await Product.findByIdAndUpdate(params.id, body, { new: true });
+
+        const product = await Product.findByIdAndUpdate(id, body, { new: true });
 
         if (!product) {
             return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
@@ -185,10 +191,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+// DELETE Product
+export async function DELETE(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> } 
+) {
     try {
         await connectDb();
-        const product = await Product.findByIdAndDelete(params.id);
+        const { id } = await params;
+
+        const product = await Product.findByIdAndDelete(id);
 
         if (!product) {
             return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
