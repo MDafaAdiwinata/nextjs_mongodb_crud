@@ -2,55 +2,45 @@ import { NextResponse } from "next/server";
 import connectDb from "../../../../../lib/db";
 import Product from "../../../../../models/Product";
 
-// Update product
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+// UPDATE Product
+export async function PUT(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> } 
+) {
     try {
         await connectDb();
+        const { id } = await params;
         const body = await req.json();
-        const product = await Product.findByIdAndUpdate(params.id, body, { new: true, })
 
-        if (!product) return NextResponse.json({ error: "Product not found!" })
+        const product = await Product.findByIdAndUpdate(id, body, { new: true });
 
-        return NextResponse.json({
-            success: true,
-            data: product,
-        })
+        if (!product) {
+            return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ success: true, data: product }, { status: 200 });
     } catch (error: any) {
-        return NextResponse.json(
-            {
-                success: false,
-                error: error.message,
-            },
-            {
-                status: 400,
-            }
-        )
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 }
 
-// for delete Product
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+// DELETE Product
+export async function DELETE(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> } 
+) {
     try {
         await connectDb();
-        const product = await Product.findByIdAndDelete(params.id);
+        const { id } = await params;
 
-        if (!product) return NextResponse.json({ error: "Product not found!" });
+        const product = await Product.findByIdAndDelete(id);
 
-        return NextResponse.json(
-            {
-                success: true,
-                message: "Product deleted!",
-            }
-        )
+        if (!product) {
+            return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ success: true, message: "Product deleted" }, { status: 200 });
     } catch (error: any) {
-        return NextResponse.json(
-            {
-                succecs: false,
-                error: error.message,
-            },
-            {
-                status: 400,
-            }
-        )
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 }
